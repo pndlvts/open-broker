@@ -1,5 +1,9 @@
 -- По вопросам писать pandelov_ts@open.ru. tg-pndlvts
-
+USE opendb 
+SELECT TOP 10 * FROM mt5.object_queue oq
+LEFT JOIN dbo.request_queue rq 
+ON oq.request_id = rq.request_id
+WHERE oq.ts > CONVERT(NVARCHAR, GETDATE(), 112) AND oq.status <> 2 AND oq.handled_error = 0
 
 
 --Проверяем команды с ошибками. В идеале обрабатываются день в день. 

@@ -5,7 +5,7 @@ DECLARE @paynum NVARCHAR(8)
 , @new_sum NVARCHAR(32)
 , @rq_id INT
 SET @paynum = '' -- Номер платежного поручения
-SET @paydate = '' -- Дата платежа
+SET @paydate = '' -- Дата платежа CONVERT(NVARCHAR, GETDATE(), 112)
 SET @new_sum = '' -- Новая сумма платежа
 SELECT @id = ordersnotradein.id, @rq_id = ordersnotradein.request_id FROM ordersnotradein WHERE paynum = @paynum AND paydate = @paydate
 BEGIN TRAN
