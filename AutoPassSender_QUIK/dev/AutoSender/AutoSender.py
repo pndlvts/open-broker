@@ -217,7 +217,7 @@ else:
         print('В БД нет записей')
         sys.exit()
     print(f'Запрос выполнился успешно. Найдено записей {arr_len}\nСтроки:')
-    with open('In\\quik.csv', 'w', encoding='utf-8') as csv_file:
+    with open('In\\quik.csv', 'w', encoding='utf-8-sig') as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=';', lineterminator='\r')
         csv_writer.writerow(['Guid', 'CLIENT_CODE', 'FIRSTNAME', 'LASTNAME', 'MAIL', 'PHONE', 'CLIENT_CODESPB', 'CLIENT_CODEFRM', 'LOGIN', 'PASSWORD'])
         for row in arr:
