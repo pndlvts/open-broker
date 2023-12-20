@@ -11,8 +11,22 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from cryptography.fernet import Fernet
+import win32com.client as win32
 
-
+def mailsender(mailtext, attach):
+    try:
+        outlook = win32.Dispatch('outlook.application')
+        mail = outlook.CreateItem(0)
+        mail.To = 'pandelov_ts@open.ru;trebish@OPEN.RU;sigoshin_my@open.ru;' #список получателей
+        mail.Subject = 'Отправка временных паролей Quik'  # тема письма
+        mail.Body = mailtext
+        mail.HTMLBody = mailtext
+        if attach == True:
+            attachment  = "log.txt"
+            mail.Attachments.Add(attachment)
+        mail.Send()
+    except:
+        print('не удалось отправить письмо!')
 def month_num_to_txt(month_num):
     month_arr =['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     if month_num == 1: return month_arr[0]
@@ -59,11 +73,13 @@ if os.path.exists('userdata.json'):
             'password': userdata['password'] #пароль шифруется скриптом pswdgenerator
         } 
 else:
+    mailsender('Не найден JSON-файл! Пароли не были отправлены. Выполните вручную или создайте JSON и перезапустите', False)
     print('Не найден JSON-файл. Остановка скрипта...')
     time.sleep(1)
     sys.exit()
 
-if os.path.exists('userdata.json') == False:
+if os.path.exists('chromedriver.exe') == False:
+    mailsender('Не найден драйвер! Пароли не были отправлены. Выполните вручную или подложите файл и перезапустите', False)
     print('Не найден ChromeDriver. Остановка скрипта...')
     time.sleep(1)
     sys.exit()
@@ -89,12 +105,15 @@ try:
     day_link.click() #и переходим на нее. На странице будет текст + таблица, в которую бизнес вносит bf-коды
     time.sleep(5)
 except:
-    print('''
+    error_text = '''
+    Попробуйте в ручную и передайте ошибку скрипта на разбор.
     Ошибка в блоке авторизации и перехода на страницу Quik Resend текущего дня.
     Если ошибка авторизации - перегенерируйте JSON и отредактируйте его, как указано в readme.md
     Если не удалось перейти на страницу, то проверьте, существует ли она (месяц/день). Возможно,
     изменилась структура страниц в Confluence!
-    ''')
+    '''
+    mailsender(error_text, False)
+    print(error_text)
     time.sleep(1)
     sys.exit()
 
@@ -107,7 +126,8 @@ try:
             txt = row.find_element(By.XPATH, 'td[1]') #находим ячейку с кодом (первый столбец)
             txt = txt.text #вытягиваем из нее значение
         except:
-            print('Ячейки не найдены')
+            error_text = 'Ячейки не найдены. Попробуйте вручную. Передайте проблему на разбор.'
+            print(error_text)
             sys.exit(1)
         if 'BF' in txt:
             txt = txt.replace(' ', '')
@@ -116,8 +136,10 @@ try:
             last_row = row_num #строка не содержит bf-код. На всякий случай проходимся по строкам дальше, бывает, что строки пропускают. можно дописать break. Вообще по идее лучше добавлять еще одну строку в конец и в ней писать, что реестр закрыт
             break
     if len(codes) == 0:
+        mailsender('Коды не найдены. Проверьте, пуста ли таблица в Confluence.', False)
         print('Коды не найдены. Проверьте, пуста ли таблица')
 except:
+    mailsender('Не удалось сформировать список кодов. Попробуйте вручную и передайте проблему на разбор', False)
     print('''
 Не удалось сформировать список кодов. Остановка...
     ''')
@@ -138,17 +160,25 @@ try:
     driver.find_element(By.ID, 'rte-button-publish').click()
     time.sleep(2)
 except:
+    mailsender('Не удалось закрыть реестр. Отправьте вручную. Проблему передайте на разбор.', False)
     print('Не удалось закрыть реестр! Остановка...')
     time.sleep(1)
     sys.exit()
 
 try:
     #Cоздание новой страницы месяца и дня в Conf ДОПИСАТЬ ПРОВЕРКИ СУЩЕСТВОВАНИЯ СТРАНИЦ
-    if (d.month < tommorow.month and d.month != 12) or (d.month > tommorow.month and d.month == 12): #если последний день месяца, то создаем страничку для нового месяца и дальше создаем страничку дня
+    if (d.month < tommorow.month and d.month != 12) or (d.month > tommorow.month and d.month == 12): #если последний день месяца, то создаем страничку для нового месяца и дальше создаем страничку дня. 
         driver.get('https://conf.open-broker.ru/display/PROC/QUIK+Resend') #переходим на страничку Quik Resend, она корневая для этого скрипта
         time.sleep(5)
         driver.find_element(By.ID, 'quick-create-page-button').click() #создаем вложенную в Quik Resend
         driver.find_element(By.ID, 'content-title').send_keys(f'{tommorow.month:02}_{tommorow_month_ru} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
+        driver.find_element(By.ID, 'rte-button-publish').click() #после публикации conf сразу кидает на опубликованную страницу
+        time.sleep(5)
+    elif (d.weekday() == 4 and d.month < (d + datetime.timedelta(days = 3)).month and d.month != 12) or (d.weekday() == 4 and d.month > (d + datetime.timedelta(days = 3)).month and d.month == 12): #(если сегодня пт, а с пн новый месяц)
+        driver.get('https://conf.open-broker.ru/display/PROC/QUIK+Resend') #переходим на страничку Quik Resend, она корневая для этого скрипта
+        time.sleep(5)
+        driver.find_element(By.ID, 'quick-create-page-button').click() #создаем вложенную в Quik Resend
+        driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_{tommorow_month_ru} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
         driver.find_element(By.ID, 'rte-button-publish').click() #после публикации conf сразу кидает на опубликованную страницу
         time.sleep(5)
     else: 
@@ -209,13 +239,14 @@ except:
 if len(codes) == 1:
     codes = '(\'' + codes[0] + '\')'
 elif len(codes) < 1:
+    mailsender('Коды в Confluence не найдены. Проверьте.', False)
     print('Коды в Confluence не найдены. Проверьте.')
     sys.exit()
 else:    
     codes = tuple(codes)
 sql_query = f'''
 OPEN SYMMETRIC KEY SK_QORT_QUIK_NOTIFICATION
-DECRYPTION BY PASSWORD = 'по запросу';
+DECRYPTION BY PASSWORD = '';
 Select
 a.person_guid as Guid,
 a.client_code as CLIENT_CODE,
@@ -237,8 +268,10 @@ try:
     conn =  pyodbc.connect('Trusted Connection=yes; Server=TITAN; Driver={SQL Server}; Database=opendb')
     conn.autocommit = True
 except pyodbc.Error as err:
+    mailsender('Не удалось подключиться к БД! Проверьте вручную', False)
     print('Не удалось подключиться к БД: ')
     print(err)
+    sys.exit()
 else:
     print('Соединение с БД установлено')
 try:
@@ -263,11 +296,16 @@ else:
         time.sleep(5)
         if autorun == 'Y':
             subprocess.call('QuikPassProcessor.cmd')
+            time.sleep(300)
+            mailsender('QuikPassProcessor.cmd запущен. Лог во вложении', True)
         elif autorun == 'N': 
+            mailsender('АВТОЗАПУСК  ОТКЛЮЧЕН! QuikPassProcessor.cmd не запускался', False)
             print('АВТОЗАПУСК  ОТКЛЮЧЕН! QuikPassProcessor.cmd не запускался')
         else:
+            mailsender('Ошибка в значении autorun', False)
             print('Значение autorun: ' + autorun + '\nДолжно быть Y или N. Остановка...')
             sys.exit(1)
     else:
+        mailsender('quik.csv не сформирован. mass-letter-sender не запускалась. Пароли не отправлены', False)
         print('quik.csv не сформирован. mass-letter-sender не запускалась. Пароли не отправлены')
 input()
