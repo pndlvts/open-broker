@@ -109,8 +109,9 @@ try:
         except:
             print('Ячейки не найдены')
             sys.exit(1)
-        if '-BF' in txt:
-            codes.append(txt[:-3]) #добавляем коды из таблицы в массив без постфикса -BF
+        if 'BF' in txt:
+            txt = txt.replace(' ', '')
+            codes.append(txt[0:6]) #добавляем коды из таблицы в массив без постфикса -BF
         else:
             last_row = row_num #строка не содержит bf-код. На всякий случай проходимся по строкам дальше, бывает, что строки пропускают. можно дописать break. Вообще по идее лучше добавлять еще одну строку в конец и в ней писать, что реестр закрыт
             break
@@ -214,7 +215,7 @@ else:
     codes = tuple(codes)
 sql_query = f'''
 OPEN SYMMETRIC KEY SK_QORT_QUIK_NOTIFICATION
-DECRYPTION BY PASSWORD = '';
+DECRYPTION BY PASSWORD = 'по запросу';
 Select
 a.person_guid as Guid,
 a.client_code as CLIENT_CODE,
