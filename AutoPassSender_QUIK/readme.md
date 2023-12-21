@@ -1,4 +1,5 @@
 1) Проверить Java и версию jdk-11.0.2, отправка происходит утилитой mass-letter-sender.jar. Закинуть json_and_key_gen.exe +  AutoSender.exe в папу с mass-letter-sender.jar
+Дополнительно проверить путь в quikPassProcessor.cmd 
 2)Запустить json_and_key_gen.exe
 3) В окне вводим свою УЗ без OPEN.RU\ и пароль
 4)  Жмем кнопку "Создать файл" и потом "Закрыть"

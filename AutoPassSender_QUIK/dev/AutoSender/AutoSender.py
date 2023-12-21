@@ -17,16 +17,18 @@ def mailsender(mailtext, attach):
     try:
         outlook = win32.Dispatch('outlook.application')
         mail = outlook.CreateItem(0)
-        mail.To = 'pandelov_ts@open.ru;trebish@OPEN.RU;sigoshin_my@open.ru;' #список получателей
+        mail.To = 'pandelov_ts@open.ru;trebish@OPEN.RU;sigoshin_my@open.ru;gorbachev_sv@open.ru' #список получателей
         mail.Subject = 'Отправка временных паролей Quik'  # тема письма
         mail.Body = mailtext
         mail.HTMLBody = mailtext
         if attach == True:
-            attachment  = "log.txt"
+            absp = os.path.abspath("log.txt")
+            attachment  = absp
             mail.Attachments.Add(attachment)
         mail.Send()
     except:
-        print('не удалось отправить письмо!')
+        print('не удалось отправить письмо')
+
 def month_num_to_txt(month_num):
     month_arr =['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     if month_num == 1: return month_arr[0]
