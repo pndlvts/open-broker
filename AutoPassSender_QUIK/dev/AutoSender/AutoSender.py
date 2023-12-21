@@ -17,11 +17,12 @@ def mailsender(mailtext, attach):
     try:
         outlook = win32.Dispatch('outlook.application')
         mail = outlook.CreateItem(0)
-        mail.To = 'pandelov_ts@open.ru;trebish@OPEN.RU;sigoshin_my@open.ru;gorbachev_sv@open.ru' #список получателей
+        mail.To = 'pandelov_ts@open.ru;trebish@OPEN.RU;sigoshin_my@open.ru;gorbachev.sv@OPEN.RU' #список получателей
         mail.Subject = 'Отправка временных паролей Quik'  # тема письма
         mail.Body = mailtext
         mail.HTMLBody = mailtext
-        if attach == True:
+        logpath = os.path.exists('log.txt')
+        if attach == True and logpath == True:
             absp = os.path.abspath("log.txt")
             attachment  = absp
             mail.Attachments.Add(attachment)
@@ -248,7 +249,7 @@ else:
     codes = tuple(codes)
 sql_query = f'''
 OPEN SYMMETRIC KEY SK_QORT_QUIK_NOTIFICATION
-DECRYPTION BY PASSWORD = '';
+DECRYPTION BY PASSWORD = 'ВПИСТАЬ';
 Select
 a.person_guid as Guid,
 a.client_code as CLIENT_CODE,
