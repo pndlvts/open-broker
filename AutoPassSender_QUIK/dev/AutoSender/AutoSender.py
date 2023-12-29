@@ -174,14 +174,20 @@ try:
         driver.get('https://conf.open-broker.ru/display/PROC/QUIK+Resend') #переходим на страничку Quik Resend, она корневая для этого скрипта
         time.sleep(5)
         driver.find_element(By.ID, 'quick-create-page-button').click() #создаем вложенную в Quik Resend
-        driver.find_element(By.ID, 'content-title').send_keys(f'{tommorow.month:02}_{tommorow_month_ru} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
+        if d.month != 12:
+            driver.find_element(By.ID, 'content-title').send_keys(f'{tommorow.month:02}_{tommorow_month_ru} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
+        elif d.month == 12:
+            driver.find_element(By.ID, 'content-title').send_keys(f'{tommorow.month:02}_{tommorow_month_ru} {d.year + 1}')
         driver.find_element(By.ID, 'rte-button-publish').click() #после публикации conf сразу кидает на опубликованную страницу
         time.sleep(5)
     elif (d.weekday() == 4 and d.month < (d + datetime.timedelta(days = 3)).month and d.month != 12) or (d.weekday() == 4 and d.month > (d + datetime.timedelta(days = 3)).month and d.month == 12): #(если сегодня пт, а с пн новый месяц)
         driver.get('https://conf.open-broker.ru/display/PROC/QUIK+Resend') #переходим на страничку Quik Resend, она корневая для этого скрипта
         time.sleep(5)
         driver.find_element(By.ID, 'quick-create-page-button').click() #создаем вложенную в Quik Resend
-        driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_{tommorow_month_ru} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
+        if d.month != 12:
+            driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_{month_num_to_txt(d.month + 1)} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
+        elif d.month == 12:
+            driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_Январь {d.year + 1}')
         driver.find_element(By.ID, 'rte-button-publish').click() #после публикации conf сразу кидает на опубликованную страницу
         time.sleep(5)
     else: 
@@ -195,7 +201,7 @@ try:
     if d.weekday() != 4:
         driver.find_element(By.ID, 'content-title').send_keys(f'{tommorow.day:02}/{tommorow.month:02}/{str(tommorow.year)[2:]} Quik') #название страницы дня в формате dd/mm/yy
     else:
-        driver.find_element(By.ID, 'content-title').send_keys(f'{tommorow.day+2:02}/{tommorow.month:02}/{str(tommorow.year)[2:]} Quik') #название страницы дня в формате dd/mm/yy
+        driver.find_element(By.ID, 'content-title').send_keys(f'{(tommorow + datetime.timedelta(days = 2)).day:02}/{(tommorow + datetime.timedelta(days = 2)).month:02}/{str((tommorow + datetime.timedelta(days = 2)).year)[2:]} Quik') #название страницы дня в формате dd/mm/yy
     driver.find_element(By.ID, 'rte-button-insert-table').click() #открываем выпадающее меню для вставки таблицы
     driver.find_element(By.XPATH, '//*[@id="table-picker-container"]').click() #вставляем таблицу, по умолчанию вставляется 3х3
     driver.switch_to.frame(driver.find_element(By.ID, 'wysiwygTextarea_ifr')) #переключаемся на фрейм
@@ -249,7 +255,7 @@ else:
     codes = tuple(codes)
 sql_query = f'''
 OPEN SYMMETRIC KEY SK_QORT_QUIK_NOTIFICATION
-DECRYPTION BY PASSWORD = 'ВПИСТАЬ';
+DECRYPTION BY PASSWORD = '';
 Select
 a.person_guid as Guid,
 a.client_code as CLIENT_CODE,
