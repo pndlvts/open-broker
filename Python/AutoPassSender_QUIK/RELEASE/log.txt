@@ -1,0 +1,54 @@
+29.01.2024 
+15:58:26.727 [main] INFO  ru.open.massLetterSender.Application - STARTING THE APPLICATION
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.5.3)
+
+15:58:27.904 [main] INFO  ru.open.massLetterSender.Application - Starting Application v1.0.0 using Java 11.0.2 on bd-vm-u118918 with PID 12032 (C:\Users\pandelov_ts\Desktop\help\3_soft\Quik\mass-letter-sender.jar started by pandelov_ts in C:\Users\pandelov_ts\Desktop\help\3_soft\Quik)
+15:58:27.904 [main] INFO  ru.open.massLetterSender.Application - No active profile set, falling back to default profiles: default
+15:58:29.850 [main] INFO  ru.open.massLetterSender.Application - Started Application in 2.888 seconds (JVM running for 3.859)
+15:58:30.136 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+15:58:30.388 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+15:58:30.434 [main] INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.2 by Redgate
+15:58:30.435 [main] INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.2
+15:58:30.435 [main] INFO  o.f.c.i.license.VersionPrinter - 
+15:58:30.435 [main] INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://bd-vm-esbmon-tt.openbroker.tech:54321/stuffdb (PostgreSQL 10.4)
+15:58:30.528 [main] INFO  o.f.core.internal.command.DbValidate - Successfully validated 17 migrations (execution time 00:00.051s)
+15:58:30.548 [main] INFO  o.f.core.internal.command.DbMigrate - Current version of schema "public": 17
+15:58:30.548 [main] WARN  o.f.core.internal.command.DbMigrate - Schema "public" has a version (17) that is newer than the latest available migration (12) !
+15:58:30.550 [main] INFO  o.f.core.internal.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+15:58:30.816 [pool-1-thread-1] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 5/7: success
+15:58:30.816 [pool-1-thread-4] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 6/7: success
+15:58:30.816 [pool-1-thread-2] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 1/7: success
+15:58:30.816 [pool-1-thread-6] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 3/7: success
+15:58:30.816 [pool-1-thread-3] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 4/7: success
+15:58:30.816 [pool-1-thread-7] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 2/7: success
+15:58:30.816 [pool-1-thread-5] INFO  r.o.m.q.QuikPasswordGeneratorProcessor - Processing 7/7: success
+15:58:30.823 [main] INFO  r.o.m.q.QuikDataSenderProcessor - Start processing quik person data
+15:58:30.823 [main] INFO  r.o.m.q.QuikDataSenderProcessor - csvPath: C:\Users\pandelov_ts\Desktop\help\3_soft\Quik\In\quik.csv
+15:58:30.828 [main] INFO  r.o.m.q.QuikDataSenderProcessor - Read from csv 7 lines.
+15:58:30.829 [main] INFO  r.o.m.q.QuikDataSenderProcessor - Password map contains 7 lines.
+15:58:32.008 [pool-2-thread-2] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 1/7: success
+15:58:32.009 [pool-2-thread-1] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 2/7: success
+15:58:32.009 [pool-2-thread-5] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 3/7: success
+15:58:32.009 [pool-2-thread-3] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 4/7: success
+15:58:32.013 [pool-2-thread-7] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 5/7: success
+15:58:32.016 [pool-2-thread-6] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 6/7: success
+15:58:32.017 [pool-2-thread-4] INFO  r.o.m.q.QuikDataSenderProcessor - Processing 7/7: success
+15:58:32.017 [main] INFO  r.o.m.q.QuikDataSenderProcessor - Finished processing quik person data
+15:58:32.326 [pool-3-thread-7] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 1/7: success
+15:58:32.337 [pool-3-thread-5] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 2/7: success
+15:58:32.337 [pool-3-thread-3] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 3/7: success
+15:58:32.344 [pool-3-thread-1] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 4/7: success
+15:58:32.350 [pool-3-thread-2] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 5/7: success
+15:58:32.350 [pool-3-thread-4] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 6/7: success
+15:58:32.350 [pool-3-thread-6] INFO  r.o.m.quikSmsSender.QuikSmsSender - Processing 7/7: success
+15:58:32.351 [main] INFO  r.o.m.quikSmsSender.QuikSmsSender - Finished processing quik person data
+15:58:32.354 [main] INFO  ru.open.massLetterSender.Application - APPLICATION FINISHED
+15:58:32.361 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+15:58:32.368 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
