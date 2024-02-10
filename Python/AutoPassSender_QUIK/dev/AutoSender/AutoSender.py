@@ -14,24 +14,52 @@ from selenium.webdriver.common.by import By
 from cryptography.fernet import Fernet
 import win32com.client as win32
 
-def mailsender(mailtext, attach):
+def mailsender(mailtext, attach, logger_var):
     try:
         outlook = win32.Dispatch('outlook.application')
         mail = outlook.CreateItem(0)
-        mail.To = 'pandelov_ts@open.ru;trebish@OPEN.RU;sigoshin_my@open.ru;gorbachev.sv@OPEN.RU' #список получателей
+        if os.path.exists('email.txt') == False:
+             print(color.Back.WARNING + color.Fore.WHITE + color.Style.BRIGHT  + 'Файл с адресатами алерта не обнаружен. Будет создан в ходе выполнения!')
+             logger_var.warning('Файл email.txt с адресатами алерта не обнаружен.')
+             f = open('email.txt', 'w')
+             try:
+                while True:
+                    f.truncate(0)
+                    print(color.Back.CYAN + color.Fore.WHITE + color.Style.BRIGHT  + 'Формат ввода: pandelov_ts@open.ru;trebish@open.ru')
+                    email = str(input('Введите получателей: '))
+                    f.write(email)
+                    logger_var.info('Файл email.txt создан в каталоге с .exe. Записаны получатели: ' + email)
+                    print(color.Back.CYAN + color.Fore.WHITE + color.Style.BRIGHT  + 'Файл email.txt создан. Записаны получатели алерта: ' + email)
+                    if input('Требуется перезаписать? (Y/N):').upper() == 'N':
+                        break
+             finally:
+                f.close()
+        f = open('email.txt', 'r')
+        try:
+            email = str(f.readline())
+            print(color.Back.CYAN + color.Fore.WHITE + color.Style.BRIGHT  + 'Файл email.txt прочитан. Считаны получатели алерта: ' + email)
+            logger_var.info('Файл email.txt считан. Прочитаны получатели алерта: ' + email)
+        finally:
+                f.close()
+        mail.To = email #список получателей
+        logger_var.info('Установлены получатели алерта: ' + email)
         mail.Subject = 'Отправка временных паролей Quik'  # тема письма
+        logger_var.info('Установлена тема письма')
         mail.Body = mailtext
         mail.HTMLBody = mailtext
+        logger_var.info('Определено тело письма')
         logpath = os.path.exists('log.txt')
         if attach == True and logpath == True:
             absp = os.path.abspath("log.txt")
             attachment  = absp
             mail.Attachments.Add(attachment)
+            logger_var.info('Добавлено вложение с логом mass-letter-sender')
         mail.Send()
     except:
-        print(colorama.Fore.RED + 'не удалось отправить письмо' + colorama.Style.RESET_ALL)
+        print(colorama.Fore.RED + 'Не удалось отправить письмо')
+        logger_var.error('except: не удалось отправить письмо')
 
-def month_num_to_txt(month_num):
+def month_num_to_txt(month_num, logger_var):
     month_arr =['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     if month_num == 1: return month_arr[0]
     elif month_num == 2: return month_arr[1]
@@ -46,28 +74,41 @@ def month_num_to_txt(month_num):
     elif month_num == 11: return month_arr[10]
     elif month_num == 12: return month_arr[11]
     else: 
-        print(colorama.Fore.RED + 'Передано некорректное число' + colorama.Style.RESET_ALL)
+        print(colorama.Fore.RED + 'Передано некорректное число')
+        logger_var.error('except: передано некорректное число')
+        logger_var.info('--------------------END--------------------')
         sys.exit(1)
 
-colorama.init()
+#подключаем логирование
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('logfile.log', 'a+')
+file_handler.setFormatter(logging.Formatter('%(asctime)s    %(levelname)s   %(message)s', '%d.%m.%Y %H:%M:%S'))
+logger.addHandler(file_handler)
+logger.info('-------------------START-------------------')
+colorama.init(autoreset=True)
 
 while(1):
-    autorun = input('Требуется ли автозапуск mass-letter-sender? (Y/N): ')
+    autorun = input('Требуется ли автозапуск mass-letter-sender? (Y/N): ').upper()
     if autorun == 'Y' or autorun == 'N':
         if autorun == 'Y':
-            print(colorama.Fore.GREEN + 'mass-letter-sender будет запущен в автоматическом режиме.' + colorama.Style.RESET_ALL)
+            print(colorama.Fore.GREEN + 'mass-letter-sender будет запущен в автоматическом режиме.')
+            logger.info('mass-letter-sender - установлен автозапуск')
         else:
-            print(colorama.Fore.YELLOW + 'ПОТРЕБУЕТСЯ РУЧНОЙ ЗАПУСК mass-letter-sender' + colorama.Style.RESET_ALL)
+            print(colorama.Fore.YELLOW + 'ПОТРЕБУЕТСЯ РУЧНОЙ ЗАПУСК mass-letter-sender')
+            logger.info('mass-letter-sender -  автозапуск ОТКЛЮЧЕН!')
         break
     else:
-        print(colorama.Fore.CYAN + 'Некорректный ввод. Попробуйте еще раз.' + colorama.Style.RESET_ALL)
+        print(colorama.Fore.CYAN + 'Некорректный ввод. Попробуйте еще раз.')
 
 d = datetime.date.today() #сегодняшняя дата
-today_month_ru = month_num_to_txt(d.month)
+today_month_ru = month_num_to_txt(d.month, logger)
 tommorow = d + datetime.timedelta(days = 1) #завтрашняя дата
-tommorow_month_ru = month_num_to_txt(tommorow.month)
+tommorow_month_ru = month_num_to_txt(tommorow.month, logger)
 if (d.weekday() == 5) or (d.weekday() == 6):
     print(colorama.Fore.RED + 'Отправка по сб и вс не требуется! Остановка скрипта...')
+    logger.info('Отправка по сб и вс не требуется!')
+    logger.info('--------------------END--------------------')
     time.sleep(1)
     sys.exit()
 
@@ -86,15 +127,20 @@ if os.path.exists('userdata.json'):
             'username': userdata['username'], #учетка без OPEN.RU\
             'password': userdata['password'] #пароль шифруется скриптом pswdgenerator
         } 
+        logger.info('Получены данные для авторизации')
 else:
-    mailsender('Не найден JSON-файл! Пароли не были отправлены. Выполните вручную или создайте JSON и перезапустите', False)
-    print(colorama.Fore.RED + 'Не найден JSON-файл. Остановка скрипта...' + colorama.Style.RESET_ALL)
+    mailsender('Не найден JSON-файл! Пароли не были отправлены. Выполните вручную или создайте JSON и перезапустите', False, logger)
+    print(colorama.Fore.RED + 'Не найден JSON-файл. Остановка скрипта...')
+    logger.error('НЕ ПОЛУЧЕНЫ ДАННЫЕ ДЛЯ АВТОРИЗАЦИИ')
+    logger.info('--------------------END--------------------')
     time.sleep(1)
     sys.exit()
 
 if os.path.exists('chromedriver.exe') == False:
-    mailsender('Не найден драйвер! Пароли не были отправлены. Выполните вручную или подложите файл и перезапустите', False)
-    print(colorama.Fore.RED + 'Не найден ChromeDriver. Остановка скрипта...' + colorama.Style.RESET_ALL)
+    mailsender('Не найден драйвер! Пароли не были отправлены. Выполните вручную или подложите файл и перезапустите', False, logger)
+    print(colorama.Fore.RED + 'Не найден ChromeDriver. Остановка скрипта...')
+    logger.error('Не найден хромдрайвер')
+    logger.info('--------------------END--------------------')
     time.sleep(1)
     sys.exit()
 try:
@@ -118,6 +164,7 @@ try:
     day_link = driver.find_element(By.PARTIAL_LINK_TEXT, day_link_text) #находим нужную страницу
     day_link.click() #и переходим на нее. На странице будет текст + таблица, в которую бизнес вносит bf-коды
     time.sleep(5)
+    logger.info('Автризация в conf прошла успешно. Переход на страницу для считывания кодов успешен.')
 except:
     error_text = '''
     Попробуйте в ручную и передайте ошибку скрипта на разбор.
@@ -126,8 +173,10 @@ except:
     Если не удалось перейти на страницу, то проверьте, существует ли она (месяц/день). Возможно,
     изменилась структура страниц в Confluence!
     '''
-    mailsender(error_text, False)
-    print(colorama.Fore.RED + error_text + colorama.Style.RESET_ALL)
+    mailsender(error_text, False, logger)
+    print(colorama.Fore.RED + error_text)
+    logger.error('Автризация в conf или переход на страницу для считывания кодов завришлись с ошибкой.')
+    logger.info('--------------------END--------------------')
     time.sleep(1)
     sys.exit()
 
@@ -141,7 +190,9 @@ try:
             txt = txt.text #вытягиваем из нее значение
         except:
             error_text = 'Ячейки не найдены. Попробуйте вручную. Передайте проблему на разбор.'
-            print(colorama.Fore.RED + error_text + colorama.Style.RESET_ALL)
+            print(colorama.Fore.RED + error_text)
+            logger.error('Ячейки не найдены. Попробуйте вручную. Передайте проблему на разбор.')
+            logger.info('--------------------END--------------------')
             sys.exit(1)
         if 'BF' in txt:
             txt = txt.replace(' ', '')
@@ -150,12 +201,16 @@ try:
             last_row = row_num #строка не содержит bf-код. На всякий случай проходимся по строкам дальше, бывает, что строки пропускают. можно дописать break. Вообще по идее лучше добавлять еще одну строку в конец и в ней писать, что реестр закрыт
             break
     if len(codes) == 0:
-        print(colorama.Fore.RED + 'Коды не найдены. Проверьте, пуста ли таблица' + colorama.Style.RESET_ALL)
+        print(colorama.Fore.RED + 'Коды не найдены. Проверьте, пуста ли таблица')
+        logger.info('Коды на странице не обнаружены')
+    logger.info('Получение кодов завершено')
 except:
-    mailsender('Не удалось сформировать список кодов. Попробуйте вручную и передайте проблему на разбор', False)
+    mailsender('Не удалось сформировать список кодов. Попробуйте вручную и передайте проблему на разбор', False, logger)
+    logger.error('Не удалось сформировать список кодов.')
+    logger.info('--------------------END--------------------')
     print(colorama.Fore.RED + '''
 Не удалось сформировать список кодов. Остановка...
-    ''' + colorama.Style.RESET_ALL)
+    ''')
     time.sleep(1)
     sys.exit()
 try:
@@ -172,9 +227,12 @@ try:
     driver.switch_to.default_content()
     driver.find_element(By.ID, 'rte-button-publish').click()
     time.sleep(2)
+    logger.info('Текущий реестр закрыт')
 except:
-    mailsender('Не удалось закрыть реестр. Отправьте вручную. Проблему передайте на разбор.', False)
-    print(colorama.Fore.RED + 'Не удалось закрыть реестр! Остановка...' + colorama.Style.RESET_ALL)
+    mailsender('Не удалось закрыть реестр. Отправьте вручную. Проблему передайте на разбор.', False, logger)
+    print(colorama.Fore.RED + 'Не удалось закрыть реестр! Остановка...')
+    logger.error('Не удалось закрыть реестр.')
+    logger.info('--------------------END--------------------')
     time.sleep(1)
     sys.exit()
 
@@ -195,7 +253,7 @@ try:
         time.sleep(5)
         driver.find_element(By.ID, 'quick-create-page-button').click() #создаем вложенную в Quik Resend
         if d.month != 12:
-            driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_{month_num_to_txt(d.month + 1)} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
+            driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_{month_num_to_txt(d.month + 1, logger)} {d.year}') #определяем название странички в формате по аналогии (например, 01_Январь 2023)
         elif d.month == 12:
             driver.find_element(By.ID, 'content-title').send_keys(f'{(d + datetime.timedelta(days = 3)).month:02}_Январь {d.year + 1}')
         driver.find_element(By.ID, 'rte-button-publish').click() #после публикации conf сразу кидает на опубликованную страницу
@@ -250,22 +308,24 @@ try:
     driver.find_element(By.ID, 'rte-button-publish').click() 
     time.sleep(3)
     driver.close()
+    logger.info('Новая страница в конф создана.')
 except:
-    print(colorama.Fore.RED + 'Не удалось создать новые страницы в Confluence. Попробуйте вручную' + colorama.Style.RESET_ALL)
+    print(colorama.Fore.RED + 'Не удалось создать новые страницы в Confluence. Попробуйте вручную')
+    logger.error('Новая страница в конф не создана.')
 
 
 #Запрос к БД
 if len(codes) == 1:
     codes = '(\'' + codes[0] + '\')'
 elif len(codes) < 1:
-    mailsender('Коды в Confluence не найдены. Проверьте.', False)
-    print(colorama.Fore.YELLOW + 'Коды в Confluence не найдены. Проверьте.' + colorama.Style.RESET_ALL)
+    mailsender('Коды в Confluence не найдены. Проверьте.', False, logger)
+    print(colorama.Fore.YELLOW + 'Коды в Confluence не найдены. Проверьте.')
     sys.exit()
 else:    
     codes = tuple(codes)
 sql_query = f'''
 OPEN SYMMETRIC KEY SK_QORT_QUIK_NOTIFICATION
-DECRYPTION BY PASSWORD = 'ключ затерт специально для личного гитхаба';
+DECRYPTION BY PASSWORD = '';
 Select
 a.person_guid as Guid,
 a.client_code as CLIENT_CODE,
@@ -287,25 +347,32 @@ try:
     conn =  pyodbc.connect('Trusted Connection=yes; Server=TITAN; Driver={SQL Server}; Database=opendb')
     conn.autocommit = True
 except pyodbc.Error as err:
-    mailsender('Не удалось подключиться к БД! Проверьте вручную', False)
-    print(colorama.Fore.RED + 'Не удалось подключиться к БД: ' + colorama.Style.RESET_ALL)
-    print(colorama.Fore.RED + err + colorama.Style.RESET_AL)
+    mailsender('Не удалось подключиться к БД! Проверьте вручную', False, logger)
+    print(colorama.Fore.RED + 'Не удалось подключиться к БД: ')
+    print(colorama.Fore.RED + err)
+    logger.error('Не удалось подключиться к БД')
+    logger.info('--------------------END--------------------')
     sys.exit()
 else:
-    print(colorama.Fore.GREEN + 'Соединение с БД установлено' + colorama.Style.RESET_ALL)
+    print(colorama.Fore.GREEN + 'Соединение с БД установлено')
+    logger.info('Подключение к БД - успешно.')
 try:
     cursor = conn.cursor()
     cursor.execute(sql_query)
 except pyodbc.Error as err:
-    print(colorama.Fore.RED + 'Запрос не выполнен' + colorama.Style.RESET_ALL)
-    print(colorama.Fore.RED + err + colorama.Style.RESET_ALL)
+    print(colorama.Fore.RED + 'Запрос не выполнен')
+    print(colorama.Fore.RED + err)
+    logger.error('Запрос не выполнен')
 else:
     arr = cursor.fetchall()
     arr_len = len(arr)
     if arr_len == 0:
-        print(colorama.Fore.CYAN + 'В БД нет записей' + colorama.Style.RESET_ALL)
+        print(colorama.Fore.CYAN + 'В БД нет записей')
+        logger.info('В БД нет записей')
+        logger.info('--------------------END--------------------')
         sys.exit()
-    print(colorama.Fore.CYAN + f'Запрос выполнился успешно. Найдено записей: {arr_len}' + colorama.Style.RESET_ALL)
+    print(colorama.Fore.CYAN + f'Запрос выполнился успешно. Найдено записей: {arr_len}')
+    logger.info(f'Запрос выполнился успешно. Найдено записей: {arr_len}')
     if os.path.exists('In'):
         with open('In\\quik.csv', 'w', encoding='utf-8-sig') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=';', lineterminator='\r')
@@ -316,15 +383,20 @@ else:
         if autorun == 'Y':
             subprocess.call('QuikPassProcessor.cmd')
             time.sleep(300)
-            mailsender('QuikPassProcessor.cmd запущен. Лог во вложении', True)
+            mailsender('QuikPassProcessor.cmd запущен. Лог во вложении', True, logger)
+            logger.info('QuikPassProcessor.cmd запущен.')
         elif autorun == 'N': 
-            mailsender('АВТОЗАПУСК  ОТКЛЮЧЕН! QuikPassProcessor.cmd не запускался', False)
-            print(colorama.Fore.YELLOW + 'АВТОЗАПУСК  ОТКЛЮЧЕН! QuikPassProcessor.cmd не запускался' + colorama.Style.RESET_ALL)
+            mailsender('АВТОЗАПУСК  ОТКЛЮЧЕН! QuikPassProcessor.cmd не запускался', False, logger)
+            print(colorama.Fore.YELLOW + 'АВТОЗАПУСК  ОТКЛЮЧЕН! QuikPassProcessor.cmd не запускался')
+            logger.warning('QuikPassProcessor.cmd НЕ запущен.')
         else:
-            mailsender('Ошибка в значении autorun', False)
-            print(colorama.Fore.RED + 'Значение autorun: ' + autorun + '\nДолжно быть Y или N. Остановка...' + colorama.Style.RESET_ALL)
+            mailsender('Ошибка в значении autorun', False, logger)
+            print(colorama.Fore.RED + 'Значение autorun: ' + autorun + '\nДолжно быть Y или N. Остановка...')
+            logger.critical('Некорректный параметр autorun')
+            logger.info('--------------------END--------------------')
             sys.exit(1)
     else:
-        mailsender('quik.csv не сформирован. mass-letter-sender не запускалась. Пароли не отправлены', False)
-        print(colorama.Fore.RED + 'quik.csv не сформирован. mass-letter-sender не запускалась. Пароли не отправлены' + colorama.Style.RESET_ALL)
+        mailsender('quik.csv не сформирован. mass-letter-sender не запускалась. Пароли не отправлены. Не найден каталог In', False, logger)
+        print(colorama.Fore.RED + 'quik.csv не сформирован. mass-letter-sender не запускалась. Пароли не отправлены. Не найден каталог In')
+logger.info('--------------------END--------------------')
 input()
