@@ -19,17 +19,17 @@ def mailsender(mailtext, attach, logger_var):
         outlook = win32.Dispatch('outlook.application')
         mail = outlook.CreateItem(0)
         if os.path.exists('email.txt') == False:
-             print(color.Back.WARNING + color.Fore.WHITE + color.Style.BRIGHT  + 'Файл с адресатами алерта не обнаружен. Будет создан в ходе выполнения!')
+             print(colorama.Back.YELLOW + colorama.Fore.WHITE + colorama.Style.BRIGHT  + 'Файл с адресатами алерта не обнаружен. Будет создан в ходе выполнения!')
              logger_var.warning('Файл email.txt с адресатами алерта не обнаружен.')
              f = open('email.txt', 'w')
              try:
                 while True:
                     f.truncate(0)
-                    print(color.Back.CYAN + color.Fore.WHITE + color.Style.BRIGHT  + 'Формат ввода: pandelov_ts@open.ru;trebish@open.ru')
+                    print(colorama.Back.CYAN + colorama.Fore.WHITE + colorama.Style.BRIGHT  + 'Формат ввода: pandelov_ts@open.ru;trebish@open.ru')
                     email = str(input('Введите получателей: '))
                     f.write(email)
                     logger_var.info('Файл email.txt создан в каталоге с .exe. Записаны получатели: ' + email)
-                    print(color.Back.CYAN + color.Fore.WHITE + color.Style.BRIGHT  + 'Файл email.txt создан. Записаны получатели алерта: ' + email)
+                    print(colorama.Back.CYAN + colorama.Fore.WHITE + colorama.Style.BRIGHT  + 'Файл email.txt создан. Записаны получатели алерта: ' + email)
                     if input('Требуется перезаписать? (Y/N):').upper() == 'N':
                         break
              finally:
@@ -37,7 +37,7 @@ def mailsender(mailtext, attach, logger_var):
         f = open('email.txt', 'r')
         try:
             email = str(f.readline())
-            print(color.Back.CYAN + color.Fore.WHITE + color.Style.BRIGHT  + 'Файл email.txt прочитан. Считаны получатели алерта: ' + email)
+            print(colorama.Back.CYAN + colorama.Fore.WHITE + colorama.Style.BRIGHT  + 'Файл email.txt прочитан. Считаны получатели алерта: ' + email)
             logger_var.info('Файл email.txt считан. Прочитаны получатели алерта: ' + email)
         finally:
                 f.close()
